@@ -6,19 +6,19 @@ An immersive, interactive climate-storytelling website where readers guess how m
 
 ## Current status
 
-🚧 **Concept prototype / work in progress**, not a completed climate-data visualization. This starter is a working static HTML/CSS/JavaScript prototype; **it does not yet use D3.js**, and the polar illustration and year-slider behavior are not real time-varying CMIP6 visualizations. Replace placeholder interactions with verified data-driven D3 views before submission.
+🚧 **Concept prototype / work in progress**, not a completed climate-data visualization. The "race to +3°C" chart is built with D3.js (loaded from a CDN). The polar map and year slider are still placeholders and will become real CMIP6 D3 views.
 
 ## How to run locally
 
 1. Download or clone the repository.
 2. Open the folder in VS Code.
 3. For a simple first preview, open `index.html` in a browser. For data-loading work, use a local server (e.g., VS Code Live Server or `python3 -m http.server 8000`) and visit `http://localhost:8000`.
-4. The project currently has no dependencies or installation step.
+4. No install step. D3 v7 loads from jsDelivr, so you need internet.
 
 ## Repository structure
 
 ```text
-guess-the-arctic/
+Guess-the-Arctic-Journey-to-2100/   (site files live at repo root for GitHub Pages)
 ├── index.html          # Five-page-chapter layout
 ├── css/
 │   └── styles.css      # Colors, layout, responsive styles
@@ -49,7 +49,7 @@ See `data/README.md` for validation requirements. No real time-varying gridded c
 
 ## Deployment
 
-GitHub Pages → **Settings** → **Pages** → **Deploy from a branch** → `main` → `/ (root)` → **Save**. A public repo is generally simplest with GitHub Free. Site URL will follow `https://YOUR-USERNAME.github.io/guess-the-arctic/` after successful deployment.
+GitHub Pages → **Settings** → **Pages** → **Deploy from a branch** → `main` → `/ (root)` → **Save**. A public repo is generally simplest with GitHub Free. Site URL will follow `https://miatrn20.github.io/Guess-the-Arctic-Journey-to-2100/` after successful deployment.
 
 ## Team workflow
 
