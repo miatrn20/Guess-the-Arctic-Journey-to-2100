@@ -7,11 +7,53 @@ function yGuess(n){return 261-n*11.5} const plotX0=53,plotX1=538;
 let step=1;
 function setStep(n){step=Math.max(step,n);$$('#howto li').forEach(li=>{const k=+li.dataset.step;li.classList.toggle('done',k<step||(k===3&&shown));li.classList.toggle('active',k===step&&!(k===3&&shown));});$('#step1box').classList.toggle('focus',step===1);$('#step2box').classList.toggle('focus',step===2);$('#step2box').classList.toggle('locked',step<2);const ok=step>=3;$('#revealBtn').disabled=!ok;$('#revealBtn').classList.toggle('ready',ok&&!shown);$('#revealHint').textContent=ok?(shown?'':'Ready! Press Reveal'):(step===1?'Step 1: drag the purple dot first':'Step 2: pick a future');}
 function markUsed(){$('#guessPlot').classList.add('used');setStep(2);}
-function renderGuess(){const y=yGuess(guess);$('#guessValue').textContent='+'+guess.toFixed(1)+'°C';$('#guessLarge').textContent=guess.toFixed(1)+'°';$('#guessRange').value=guess;$('#guessDot').setAttribute('cx',plotX1);$('#guessDot').setAttribute('cy',y);$('#guessDotText').setAttribute('x',plotX1-18);$('#guessDotText').setAttribute('y',y-18);$('#guessDotText').textContent='YOUR GUESS';$('#guessPulse').setAttribute('cx',plotX1);$('#guessPulse').setAttribute('cy',y);$('#dragHint').setAttribute('transform',`translate(0,${Math.max(0,y-62)})`);$('#guessPath').setAttribute('d',`M${plotX0} 261 C 175 258, 390 ${y+45}, ${plotX1} ${y}`);if(shown){const actual=DATA[scenario].a;$('#revealLine').style.display='';$('#revealLine').setAttribute('y1',yGuess(actual));$('#revealLine').setAttribute('y2',yGuess(actual));$('#revealLine').setAttribute('stroke',DATA[scenario].color);$('#revealLabel').style.display='';$('#revealLabel').setAttribute('y',yGuess(actual)-8);$('#revealLabel').setAttribute('fill',DATA[scenario].color);$('#revealLabel').textContent='MODEL: +'+actual.toFixed(1)+'°C';$('#resultTemp').textContent='+'+actual.toFixed(1)+'°C';$('#resultTemp').style.color=DATA[scenario].color;let delta=Math.abs(actual-guess);$('#resultText').textContent=delta<.05?'An exact end-of-century match!':`Your guess is ${delta.toFixed(1)}°C ${guess<actual?'below':'above'} this scenario's projected end-of-century Arctic warming.`;}else{$('#revealLine').style.display='none';$('#revealLabel').style.display='none';}}
+function setGuess(raw){
+  const next=Math.max(0,Math.min(20,Math.round(Number(raw)*2)/2));
+  const changed=next!==guess||shown;
+  guess=next;
+  if(changed){
+    shown=false;
+    $('#result').classList.remove('show');
+    $('#revealBtn').textContent='Reveal the future ↗';
+  }
+  markUsed();
+  renderGuess();
+  setStep(step);
+}
+function renderGuess(){const y=yGuess(guess);$('#guessValue').textContent='+'+guess.toFixed(1)+'°C';$('#guessLarge').textContent=guess.toFixed(1)+'°';$('#guessRange').value=guess;$('#guessDot').setAttribute('cx',plotX1);$('#guessDot').setAttribute('cy',y);$('#guessHit').setAttribute('cx',plotX1);$('#guessHit').setAttribute('cy',y);$('#guessDotText').setAttribute('x',plotX1-18);$('#guessDotText').setAttribute('y',y-18);$('#guessDotText').textContent='YOUR GUESS';$('#guessPulse').setAttribute('cx',plotX1);$('#guessPulse').setAttribute('cy',y);$('#dragHint').setAttribute('transform',`translate(0,${Math.max(0,y-62)})`);$('#guessPath').setAttribute('d',`M${plotX0} 261 C 175 258, 390 ${y+45}, ${plotX1} ${y}`);if(shown){const actual=DATA[scenario].a;$('#revealLine').style.display='';$('#revealLine').setAttribute('y1',yGuess(actual));$('#revealLine').setAttribute('y2',yGuess(actual));$('#revealLine').setAttribute('stroke',DATA[scenario].color);$('#revealLabel').style.display='';$('#revealLabel').setAttribute('y',yGuess(actual)-8);$('#revealLabel').setAttribute('fill',DATA[scenario].color);$('#revealLabel').textContent='MODEL: +'+actual.toFixed(1)+'°C';$('#resultTemp').textContent='+'+actual.toFixed(1)+'°C';$('#resultTemp').style.color=DATA[scenario].color;let delta=Math.abs(actual-guess);$('#resultText').textContent=delta<.05?'An exact end-of-century match!':`Your guess is ${delta.toFixed(1)}°C ${guess<actual?'below':'above'} this scenario's projected end-of-century Arctic warming.`;}else{$('#revealLine').style.display='none';$('#revealLabel').style.display='none';}}
 const svgNS='http://www.w3.org/2000/svg';function node(tag,attrs,text,parent){let el=document.createElementNS(svgNS,tag);Object.entries(attrs||{}).forEach(([k,v])=>el.setAttribute(k,v));if(text!==undefined&&text!==null)el.textContent=text;if(parent)parent.appendChild(el);return el;}
 const gg=$('#guessGrid');for(let t=0;t<=20;t+=5){let y=yGuess(t);node('line',{x1:53,x2:538,y1:y,y2:y,class:'gridline'},null,gg);node('text',{x:41,y:y+4,'text-anchor':'end',class:'axislabel'},'+'+t+'°',gg);}node('line',{x1:53,x2:538,y1:261,y2:261,stroke:'#8cabb7'},null,gg);
-$('#guessRange').addEventListener('input',e=>{markUsed();guess=+e.target.value;shown=false;$('#result').classList.remove('show');$('#revealBtn').textContent='Reveal the future ↗';renderGuess();setStep(step)});
-let dragging=false;const guessPlot=$('#guessPlot');function dragGuess(e){const rect=guessPlot.getBoundingClientRect();const sx=570/rect.width,sy=305/rect.height;const localY=(e.clientY-rect.top)*sy;guess=Math.max(0,Math.min(20,Math.round((261-localY)/11.5*2)/2));shown=false;$('#result').classList.remove('show');$('#revealBtn').textContent='Reveal the future ↗';renderGuess();}guessPlot.addEventListener('pointerdown',e=>{dragging=true;markUsed();guessPlot.setPointerCapture(e.pointerId);dragGuess(e)});guessPlot.addEventListener('pointermove',e=>{if(dragging)dragGuess(e)});guessPlot.addEventListener('pointerup',()=>dragging=false);guessPlot.addEventListener('pointercancel',()=>dragging=false);
+$('#guessRange').addEventListener('input',e=>setGuess(e.target.value));
+let dragging=false;
+const guessPlot=$('#guessPlot');
+const guessHit=$('#guessHit');
+const guessDot=$('#guessDot');
+function pointerToGuess(e){
+  const rect=guessPlot.getBoundingClientRect();
+  const localY=(e.clientY-rect.top)*(305/rect.height);
+  setGuess((261-localY)/11.5);
+}
+function endDrag(e){
+  if(!dragging)return;
+  dragging=false;
+  guessPlot.classList.remove('dragging');
+  if(e&&guessHit.hasPointerCapture?.(e.pointerId))guessHit.releasePointerCapture(e.pointerId);
+}
+guessHit.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  dragging=true;
+  guessPlot.classList.add('dragging');
+  guessHit.setPointerCapture(e.pointerId);
+  pointerToGuess(e);
+});
+guessHit.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  e.preventDefault();
+  pointerToGuess(e);
+});
+guessHit.addEventListener('pointerup',endDrag);
+guessHit.addEventListener('pointercancel',endDrag);
+guessDot.setAttribute('pointer-events','none');
 $('#revealBtn').addEventListener('click',()=>{if(step<3)return;if(shown){shown=false;$('#result').classList.remove('show');$('#revealBtn').textContent='Reveal the future ↗'}else{shown=true;$('#result').classList.add('show');$('#revealBtn').textContent='Try another guess ↻'}renderGuess();setStep(step);if(shown)$('#result').scrollIntoView({behavior:'smooth',block:'center'})});
 // Accurate end-of-century values from proposal Figure 4. No interpolated climate time series are drawn.
 function renderComparison(){let root=$('#comparisonSvg');root.replaceChildren();const scale=v=>145+v*30;for(let v=0;v<=16;v+=4){node('line',{x1:scale(v),x2:scale(v),y1:33,y2:243,stroke:'#e3edf1','stroke-dasharray':'3 5'},null,root);node('text',{x:scale(v),y:264,'text-anchor':'middle',class:'axislabel'},v+'°C',root);}Object.entries(DATA).forEach(([key,d],i)=>{const y=78+i*74;node('text',{x:11,y:y-2,fill:'#325a69','font-size':'15','font-weight':'800'},['LOW','MIDDLE','HIGH'][i],root);node('line',{x1:scale(d.g),x2:scale(d.a),y1:y,y2:y,stroke:d.color,'stroke-width':'8','stroke-opacity':'.45','stroke-linecap':'round'},null,root);node('circle',{cx:scale(d.g),cy:y,r:8,fill:'#e8eff1',stroke:'#7394a3','stroke-width':'2'},null,root);node('circle',{cx:scale(d.a),cy:y,r:10,fill:d.color,stroke:'#fff','stroke-width':'3'},null,root);node('text',{x:scale(d.g),y:y-18,'text-anchor':'middle',fill:'#516e7b','font-size':'15','font-weight':'800'},d.g.toFixed(1)+'°',root);node('text',{x:scale(d.a),y:y-18,'text-anchor':'middle',fill:d.color,'font-size':'16','font-weight':'900'},d.a.toFixed(1)+'°',root);node('text',{x:scale(d.a)+18,y:y+5,fill:d.color,'font-size':'14','font-weight':'800'},(d.a/d.g).toFixed(1)+'× faster',root);});}renderComparison();
